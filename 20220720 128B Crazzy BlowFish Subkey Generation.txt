@@ -1,0 +1,422 @@
+///////////////////////////////         Tariq Aziz & Muhammad Kamran		///////////////////////////////
+///////////////////////////////      BlowFish Algorithm (SubKeys Generation) 	///////////////////////////////
+///////////////////////////////         Block Size: 128 bits			///////////////////////////////
+///////////////////////////////         Rounds = 12				///////////////////////////////
+///////////////////////////////         P-Arrays = 64 bit x 12			///////////////////////////////
+///////////////////////////////         Total Sub Keys = 32 bit x 12		///////////////////////////////
+
+
+#include <iostream>
+#include <string>
+#include <time.h>
+using namespace std;
+
+static string iniPArr[] = {
+  "243f6a88243f6a88", "85a308d385a308d3", "13198a2e13198a2e", "0370734403707344",
+  "a4093822a4093822", "299f31d0299f31d0", "082efa98082efa98", "ec4e6c89ec4e6c89",
+  "452821e6452821e6", "38d0137738d01377", "be5466cfbe5466cf", "34e90c6c34e90c6c",
+};
+
+// Substitution boxes each string is a 32 bit hexadecimal value.
+string S[][256] = {
+    { "d1310ba6d1310ba6", "98dfb5ac98dfb5ac", "2ffd72db2ffd72db", "d01adfb7d01adfb7",
+      "b8e1afedb8e1afed", "6a267e966a267e96", "ba7c9045ba7c9045", "f12c7f99f12c7f99",
+      "24a1994724a19947", "b3916cf7b3916cf7", "0801f2e20801f2e2", "858efc16858efc16",
+      "636920d8636920d8", "71574e6971574e69", "a458fea3a458fea3", "f4933d7ef4933d7e",
+      "0d95748f0d95748f", "728eb658728eb658", "718bcd58718bcd58", "82154aee82154aee",
+      "7b54a41d7b54a41d", "c25a59b5c25a59b5", "9c30d5399c30d539", "2af260132af26013",
+      "c5d1b023c5d1b023", "286085f0286085f0", "ca417918ca417918", "b8db38efb8db38ef",
+      "8e79dcb08e79dcb0", "603a180e603a180e", "6c9e0e8b6c9e0e8b", "b01e8a3eb01e8a3e",
+      "d71577c1d71577c1", "bd314b27bd314b27", "78af2fda78af2fda", "55605c6055605c60",
+      "e65525f3e65525f3", "aa55ab94aa55ab94", "5748986257489862", "63e8144063e81440",
+      "55ca396a55ca396a", "2aab10b62aab10b6", "b4cc5c34b4cc5c34", "1141e8ce1141e8ce",
+      "a15486afa15486af", "7c72e9937c72e993", "b3ee1411b3ee1411", "636fbc2a636fbc2a",
+      "2ba9c55d2ba9c55d", "741831f6741831f6", "ce5c3e16ce5c3e16", "9b87931e9b87931e",
+      "afd6ba33afd6ba33", "6c24cf5c6c24cf5c", "7a3253817a325381", "2895867728958677",
+      "3b8f48983b8f4898", "6b4bb9af6b4bb9af", "c4bfe81bc4bfe81b", "6628219366282193",
+      "61d809cc61d809cc", "fb21a991fb21a991", "487cac60487cac60", "5dec80325dec8032",
+      "ef845d5def845d5d", "e98575b1e98575b1", "dc262302dc262302", "eb651b88eb651b88",
+      "23893e8123893e81", "d396acc5d396acc5", "0f6d6ff30f6d6ff3", "83f4423983f44239",
+      "2e0b44822e0b4482", "a4842004a4842004", "69c8f04a69c8f04a", "9e1f9b5e9e1f9b5e",
+      "21c6684221c66842", "f6e96c9af6e96c9a", "670c9c61670c9c61", "abd388f0abd388f0",
+      "6a51a0d26a51a0d2", "d8542f68d8542f68", "960fa728960fa728", "ab5133a3ab5133a3",
+      "6eef0b6c6eef0b6c", "137a3be4137a3be4", "ba3bf050ba3bf050", "7efb2a987efb2a98",
+      "a1f1651da1f1651d", "39af017639af0176", "66ca593e66ca593e", "82430e8882430e88",
+      "8cee86198cee8619", "456f9fb4456f9fb4", "7d84a5c37d84a5c3", "3b8b5ebe3b8b5ebe",
+      "e06f75d8e06f75d8", "85c1207385c12073", "401a449f401a449f", "56c16aa656c16aa6",
+      "4ed3aa624ed3aa62", "363f7706363f7706", "1bfedf721bfedf72", "429b023d429b023d",
+      "37d0d72437d0d724", "d00a1248d00a1248", "db0fead3db0fead3", "49f1c09b49f1c09b",
+      "075372c9075372c9", "80991b7b80991b7b", "25d479d825d479d8", "f6e8def7f6e8def7",
+      "e3fe501ae3fe501a", "b6794c3bb6794c3b", "976ce0bd976ce0bd", "04c006ba04c006ba",
+      "c1a94fb6c1a94fb6", "409f60c4409f60c4", "5e5c9ec25e5c9ec2", "196a2463196a2463",
+      "68fb6faf68fb6faf", "3e6c53b53e6c53b5", "1339b2eb1339b2eb", "3b52ec6f3b52ec6f",
+      "6dfc511f6dfc511f", "9b30952c9b30952c", "cc814544cc814544", "af5ebd09af5ebd09",
+      "bee3d004bee3d004", "de334afdde334afd", "660f2807660f2807", "192e4bb3192e4bb3",
+      "c0cba857c0cba857", "45c8740f45c8740f", "d20b5f39d20b5f39", "b9d3fbdbb9d3fbdb",
+      "5579c0bd5579c0bd", "1a60320a1a60320a", "d6a100c6d6a100c6", "402c7279402c7279",
+      "679f25fe679f25fe", "fb1fa3ccfb1fa3cc", "8ea5e9f88ea5e9f8", "db3222f8db3222f8",
+      "3c7516df3c7516df", "fd616b15fd616b15", "2f501ec82f501ec8", "ad0552abad0552ab",
+      "323db5fa323db5fa", "fd238760fd238760", "53317b4853317b48", "3e00df823e00df82",
+      "9e5c57bb9e5c57bb", "ca6f8ca0ca6f8ca0", "1a87562e1a87562e", "df1769dbdf1769db",
+      "d542a8f6d542a8f6", "287effc3287effc3", "ac6732c6ac6732c6", "8c4f55738c4f5573",
+      "695b27b0695b27b0", "bbca58c8bbca58c8", "e1ffa35de1ffa35d", "b8f011a0b8f011a0",
+      "10fa3d9810fa3d98", "fd2183b8fd2183b8", "4afcb56c4afcb56c", "2dd1d35b2dd1d35b",
+      "9a53e4799a53e479", "b6f84565b6f84565", "d28e49bcd28e49bc", "4bfb97904bfb9790",
+      "e1ddf2dae1ddf2da", "a4cb7e33a4cb7e33", "62fb134162fb1341", "cee4c6e8cee4c6e8",
+      "ef20cadaef20cada", "36774c0136774c01", "d07e9efed07e9efe", "2bf11fb42bf11fb4",
+      "95dbda4d95dbda4d", "ae909198ae909198", "eaad8e71eaad8e71", "6b93d5a06b93d5a0",
+      "d08ed1d0d08ed1d0", "afc725e0afc725e0", "8e3c5b2f8e3c5b2f", "8e7594b78e7594b7",
+      "8ff6e2fb8ff6e2fb", "f2122b64f2122b64", "8888b8128888b812", "900df01c900df01c",
+      "4fad5ea04fad5ea0", "688fc31c688fc31c", "d1cff191d1cff191", "b3a8c1adb3a8c1ad",
+      "2f2f22182f2f2218", "be0e1777be0e1777", "ea752dfeea752dfe", "8b021fa18b021fa1",
+      "e5a0cc0fe5a0cc0f", "b56f74e8b56f74e8", "18acf3d618acf3d6", "ce89e299ce89e299",
+      "b4a84fe0b4a84fe0", "fd13e0b7fd13e0b7", "7cc43b817cc43b81", "d2ada8d9d2ada8d9",
+      "165fa266165fa266", "8095770580957705", "93cc731493cc7314", "211a1477211a1477",
+      "e6ad2065e6ad2065", "77b5fa8677b5fa86", "c75442f5c75442f5", "fb9d35cffb9d35cf",
+      "ebcdaf0cebcdaf0c", "7b3e89a07b3e89a0", "d6411bd3d6411bd3", "ae1e7e49ae1e7e49",
+      "00250e2d00250e2d", "2071b35e2071b35e", "226800bb226800bb", "57b8e0af57b8e0af",
+      "2464369b2464369b", "f009b91ef009b91e", "5563911d5563911d", "59dfa6aa59dfa6aa",
+      "78c1438978c14389", "d95a537fd95a537f", "207d5ba2207d5ba2", "02e5b9c502e5b9c5",
+      "8326037683260376", "6295cfa96295cfa9", "11c8196811c81968", "4e734a414e734a41",
+      "b3472dcab3472dca", "7b14a94a7b14a94a", "1b5100521b510052", "9a5329159a532915",
+      "d60f573fd60f573f", "bc9bc6e4bc9bc6e4", "2b60a4762b60a476", "81e6740081e67400",
+      "08ba6fb508ba6fb5", "571be91f571be91f", "f296ec6bf296ec6b", "2a0dd9152a0dd915",
+      "b6636521b6636521", "e7b9f9b6e7b9f9b6", "ff34052eff34052e", "c5855664c5855664",
+      "53b02d5d53b02d5d", "a99f8fa1a99f8fa1", "08ba479908ba4799", "6e85076a6e85076a" },
+
+    { "d1310ba6d1310ba6", "98dfb5ac98dfb5ac", "2ffd72db2ffd72db", "d01adfb7d01adfb7",
+      "b8e1afedb8e1afed", "6a267e966a267e96", "ba7c9045ba7c9045", "f12c7f99f12c7f99",
+      "24a1994724a19947", "b3916cf7b3916cf7", "0801f2e20801f2e2", "858efc16858efc16",
+      "636920d8636920d8", "71574e6971574e69", "a458fea3a458fea3", "f4933d7ef4933d7e",
+      "0d95748f0d95748f", "728eb658728eb658", "718bcd58718bcd58", "82154aee82154aee",
+      "7b54a41d7b54a41d", "c25a59b5c25a59b5", "9c30d5399c30d539", "2af260132af26013",
+      "c5d1b023c5d1b023", "286085f0286085f0", "ca417918ca417918", "b8db38efb8db38ef",
+      "8e79dcb08e79dcb0", "603a180e603a180e", "6c9e0e8b6c9e0e8b", "b01e8a3eb01e8a3e",
+      "d71577c1d71577c1", "bd314b27bd314b27", "78af2fda78af2fda", "55605c6055605c60",
+      "e65525f3e65525f3", "aa55ab94aa55ab94", "5748986257489862", "63e8144063e81440",
+      "55ca396a55ca396a", "2aab10b62aab10b6", "b4cc5c34b4cc5c34", "1141e8ce1141e8ce",
+      "a15486afa15486af", "7c72e9937c72e993", "b3ee1411b3ee1411", "636fbc2a636fbc2a",
+      "2ba9c55d2ba9c55d", "741831f6741831f6", "ce5c3e16ce5c3e16", "9b87931e9b87931e",
+      "afd6ba33afd6ba33", "6c24cf5c6c24cf5c", "7a3253817a325381", "2895867728958677",
+      "3b8f48983b8f4898", "6b4bb9af6b4bb9af", "c4bfe81bc4bfe81b", "6628219366282193",
+      "61d809cc61d809cc", "fb21a991fb21a991", "487cac60487cac60", "5dec80325dec8032",
+      "ef845d5def845d5d", "e98575b1e98575b1", "dc262302dc262302", "eb651b88eb651b88",
+      "23893e8123893e81", "d396acc5d396acc5", "0f6d6ff30f6d6ff3", "83f4423983f44239",
+      "2e0b44822e0b4482", "a4842004a4842004", "69c8f04a69c8f04a", "9e1f9b5e9e1f9b5e",
+      "21c6684221c66842", "f6e96c9af6e96c9a", "670c9c61670c9c61", "abd388f0abd388f0",
+      "6a51a0d26a51a0d2", "d8542f68d8542f68", "960fa728960fa728", "ab5133a3ab5133a3",
+      "6eef0b6c6eef0b6c", "137a3be4137a3be4", "ba3bf050ba3bf050", "7efb2a987efb2a98",
+      "a1f1651da1f1651d", "39af017639af0176", "66ca593e66ca593e", "82430e8882430e88",
+      "8cee86198cee8619", "456f9fb4456f9fb4", "7d84a5c37d84a5c3", "3b8b5ebe3b8b5ebe",
+      "e06f75d8e06f75d8", "85c1207385c12073", "401a449f401a449f", "56c16aa656c16aa6",
+      "4ed3aa624ed3aa62", "363f7706363f7706", "1bfedf721bfedf72", "429b023d429b023d",
+      "37d0d72437d0d724", "d00a1248d00a1248", "db0fead3db0fead3", "49f1c09b49f1c09b",
+      "075372c9075372c9", "80991b7b80991b7b", "25d479d825d479d8", "f6e8def7f6e8def7",
+      "e3fe501ae3fe501a", "b6794c3bb6794c3b", "976ce0bd976ce0bd", "04c006ba04c006ba",
+      "c1a94fb6c1a94fb6", "409f60c4409f60c4", "5e5c9ec25e5c9ec2", "196a2463196a2463",
+      "68fb6faf68fb6faf", "3e6c53b53e6c53b5", "1339b2eb1339b2eb", "3b52ec6f3b52ec6f",
+      "6dfc511f6dfc511f", "9b30952c9b30952c", "cc814544cc814544", "af5ebd09af5ebd09",
+      "bee3d004bee3d004", "de334afdde334afd", "660f2807660f2807", "192e4bb3192e4bb3",
+      "c0cba857c0cba857", "45c8740f45c8740f", "d20b5f39d20b5f39", "b9d3fbdbb9d3fbdb",
+      "5579c0bd5579c0bd", "1a60320a1a60320a", "d6a100c6d6a100c6", "402c7279402c7279",
+      "679f25fe679f25fe", "fb1fa3ccfb1fa3cc", "8ea5e9f88ea5e9f8", "db3222f8db3222f8",
+      "3c7516df3c7516df", "fd616b15fd616b15", "2f501ec82f501ec8", "ad0552abad0552ab",
+      "323db5fa323db5fa", "fd238760fd238760", "53317b4853317b48", "3e00df823e00df82",
+      "9e5c57bb9e5c57bb", "ca6f8ca0ca6f8ca0", "1a87562e1a87562e", "df1769dbdf1769db",
+      "d542a8f6d542a8f6", "287effc3287effc3", "ac6732c6ac6732c6", "8c4f55738c4f5573",
+      "695b27b0695b27b0", "bbca58c8bbca58c8", "e1ffa35de1ffa35d", "b8f011a0b8f011a0",
+      "10fa3d9810fa3d98", "fd2183b8fd2183b8", "4afcb56c4afcb56c", "2dd1d35b2dd1d35b",
+      "9a53e4799a53e479", "b6f84565b6f84565", "d28e49bcd28e49bc", "4bfb97904bfb9790",
+      "e1ddf2dae1ddf2da", "a4cb7e33a4cb7e33", "62fb134162fb1341", "cee4c6e8cee4c6e8",
+      "ef20cadaef20cada", "36774c0136774c01", "d07e9efed07e9efe", "2bf11fb42bf11fb4",
+      "95dbda4d95dbda4d", "ae909198ae909198", "eaad8e71eaad8e71", "6b93d5a06b93d5a0",
+      "d08ed1d0d08ed1d0", "afc725e0afc725e0", "8e3c5b2f8e3c5b2f", "8e7594b78e7594b7",
+      "8ff6e2fb8ff6e2fb", "f2122b64f2122b64", "8888b8128888b812", "900df01c900df01c",
+      "4fad5ea04fad5ea0", "688fc31c688fc31c", "d1cff191d1cff191", "b3a8c1adb3a8c1ad",
+      "2f2f22182f2f2218", "be0e1777be0e1777", "ea752dfeea752dfe", "8b021fa18b021fa1",
+      "e5a0cc0fe5a0cc0f", "b56f74e8b56f74e8", "18acf3d618acf3d6", "ce89e299ce89e299",
+      "b4a84fe0b4a84fe0", "fd13e0b7fd13e0b7", "7cc43b817cc43b81", "d2ada8d9d2ada8d9",
+      "165fa266165fa266", "8095770580957705", "93cc731493cc7314", "211a1477211a1477",
+      "e6ad2065e6ad2065", "77b5fa8677b5fa86", "c75442f5c75442f5", "fb9d35cffb9d35cf",
+      "ebcdaf0cebcdaf0c", "7b3e89a07b3e89a0", "d6411bd3d6411bd3", "ae1e7e49ae1e7e49",
+      "00250e2d00250e2d", "2071b35e2071b35e", "226800bb226800bb", "57b8e0af57b8e0af",
+      "2464369b2464369b", "f009b91ef009b91e", "5563911d5563911d", "59dfa6aa59dfa6aa",
+      "78c1438978c14389", "d95a537fd95a537f", "207d5ba2207d5ba2", "02e5b9c502e5b9c5",
+      "8326037683260376", "6295cfa96295cfa9", "11c8196811c81968", "4e734a414e734a41",
+      "b3472dcab3472dca", "7b14a94a7b14a94a", "1b5100521b510052", "9a5329159a532915",
+      "d60f573fd60f573f", "bc9bc6e4bc9bc6e4", "2b60a4762b60a476", "81e6740081e67400",
+      "08ba6fb508ba6fb5", "571be91f571be91f", "f296ec6bf296ec6b", "2a0dd9152a0dd915",
+      "b6636521b6636521", "e7b9f9b6e7b9f9b6", "ff34052eff34052e", "c5855664c5855664",
+      "53b02d5d53b02d5d", "a99f8fa1a99f8fa1", "08ba479908ba4799", "6e85076a6e85076a" },
+
+    { "d1310ba6d1310ba6", "98dfb5ac98dfb5ac", "2ffd72db2ffd72db", "d01adfb7d01adfb7",
+        "b8e1afedb8e1afed", "6a267e966a267e96", "ba7c9045ba7c9045", "f12c7f99f12c7f99",
+        "24a1994724a19947", "b3916cf7b3916cf7", "0801f2e20801f2e2", "858efc16858efc16",
+        "636920d8636920d8", "71574e6971574e69", "a458fea3a458fea3", "f4933d7ef4933d7e",
+        "0d95748f0d95748f", "728eb658728eb658", "718bcd58718bcd58", "82154aee82154aee",
+        "7b54a41d7b54a41d", "c25a59b5c25a59b5", "9c30d5399c30d539", "2af260132af26013",
+        "c5d1b023c5d1b023", "286085f0286085f0", "ca417918ca417918", "b8db38efb8db38ef",
+        "8e79dcb08e79dcb0", "603a180e603a180e", "6c9e0e8b6c9e0e8b", "b01e8a3eb01e8a3e",
+        "d71577c1d71577c1", "bd314b27bd314b27", "78af2fda78af2fda", "55605c6055605c60",
+        "e65525f3e65525f3", "aa55ab94aa55ab94", "5748986257489862", "63e8144063e81440",
+        "55ca396a55ca396a", "2aab10b62aab10b6", "b4cc5c34b4cc5c34", "1141e8ce1141e8ce",
+        "a15486afa15486af", "7c72e9937c72e993", "b3ee1411b3ee1411", "636fbc2a636fbc2a",
+        "2ba9c55d2ba9c55d", "741831f6741831f6", "ce5c3e16ce5c3e16", "9b87931e9b87931e",
+        "afd6ba33afd6ba33", "6c24cf5c6c24cf5c", "7a3253817a325381", "2895867728958677",
+        "3b8f48983b8f4898", "6b4bb9af6b4bb9af", "c4bfe81bc4bfe81b", "6628219366282193",
+        "61d809cc61d809cc", "fb21a991fb21a991", "487cac60487cac60", "5dec80325dec8032",
+        "ef845d5def845d5d", "e98575b1e98575b1", "dc262302dc262302", "eb651b88eb651b88",
+        "23893e8123893e81", "d396acc5d396acc5", "0f6d6ff30f6d6ff3", "83f4423983f44239",
+        "2e0b44822e0b4482", "a4842004a4842004", "69c8f04a69c8f04a", "9e1f9b5e9e1f9b5e",
+        "21c6684221c66842", "f6e96c9af6e96c9a", "670c9c61670c9c61", "abd388f0abd388f0",
+        "6a51a0d26a51a0d2", "d8542f68d8542f68", "960fa728960fa728", "ab5133a3ab5133a3",
+        "6eef0b6c6eef0b6c", "137a3be4137a3be4", "ba3bf050ba3bf050", "7efb2a987efb2a98",
+        "a1f1651da1f1651d", "39af017639af0176", "66ca593e66ca593e", "82430e8882430e88",
+        "8cee86198cee8619", "456f9fb4456f9fb4", "7d84a5c37d84a5c3", "3b8b5ebe3b8b5ebe",
+        "e06f75d8e06f75d8", "85c1207385c12073", "401a449f401a449f", "56c16aa656c16aa6",
+        "4ed3aa624ed3aa62", "363f7706363f7706", "1bfedf721bfedf72", "429b023d429b023d",
+        "37d0d72437d0d724", "d00a1248d00a1248", "db0fead3db0fead3", "49f1c09b49f1c09b",
+        "075372c9075372c9", "80991b7b80991b7b", "25d479d825d479d8", "f6e8def7f6e8def7",
+        "e3fe501ae3fe501a", "b6794c3bb6794c3b", "976ce0bd976ce0bd", "04c006ba04c006ba",
+        "c1a94fb6c1a94fb6", "409f60c4409f60c4", "5e5c9ec25e5c9ec2", "196a2463196a2463",
+        "68fb6faf68fb6faf", "3e6c53b53e6c53b5", "1339b2eb1339b2eb", "3b52ec6f3b52ec6f",
+        "6dfc511f6dfc511f", "9b30952c9b30952c", "cc814544cc814544", "af5ebd09af5ebd09",
+        "bee3d004bee3d004", "de334afdde334afd", "660f2807660f2807", "192e4bb3192e4bb3",
+        "c0cba857c0cba857", "45c8740f45c8740f", "d20b5f39d20b5f39", "b9d3fbdbb9d3fbdb",
+        "5579c0bd5579c0bd", "1a60320a1a60320a", "d6a100c6d6a100c6", "402c7279402c7279",
+        "679f25fe679f25fe", "fb1fa3ccfb1fa3cc", "8ea5e9f88ea5e9f8", "db3222f8db3222f8",
+        "3c7516df3c7516df", "fd616b15fd616b15", "2f501ec82f501ec8", "ad0552abad0552ab",
+        "323db5fa323db5fa", "fd238760fd238760", "53317b4853317b48", "3e00df823e00df82",
+        "9e5c57bb9e5c57bb", "ca6f8ca0ca6f8ca0", "1a87562e1a87562e", "df1769dbdf1769db",
+        "d542a8f6d542a8f6", "287effc3287effc3", "ac6732c6ac6732c6", "8c4f55738c4f5573",
+        "695b27b0695b27b0", "bbca58c8bbca58c8", "e1ffa35de1ffa35d", "b8f011a0b8f011a0",
+        "10fa3d9810fa3d98", "fd2183b8fd2183b8", "4afcb56c4afcb56c", "2dd1d35b2dd1d35b",
+        "9a53e4799a53e479", "b6f84565b6f84565", "d28e49bcd28e49bc", "4bfb97904bfb9790",
+        "e1ddf2dae1ddf2da", "a4cb7e33a4cb7e33", "62fb134162fb1341", "cee4c6e8cee4c6e8",
+        "ef20cadaef20cada", "36774c0136774c01", "d07e9efed07e9efe", "2bf11fb42bf11fb4",
+        "95dbda4d95dbda4d", "ae909198ae909198", "eaad8e71eaad8e71", "6b93d5a06b93d5a0",
+        "d08ed1d0d08ed1d0", "afc725e0afc725e0", "8e3c5b2f8e3c5b2f", "8e7594b78e7594b7",
+        "8ff6e2fb8ff6e2fb", "f2122b64f2122b64", "8888b8128888b812", "900df01c900df01c",
+        "4fad5ea04fad5ea0", "688fc31c688fc31c", "d1cff191d1cff191", "b3a8c1adb3a8c1ad",
+        "2f2f22182f2f2218", "be0e1777be0e1777", "ea752dfeea752dfe", "8b021fa18b021fa1",
+        "e5a0cc0fe5a0cc0f", "b56f74e8b56f74e8", "18acf3d618acf3d6", "ce89e299ce89e299",
+        "b4a84fe0b4a84fe0", "fd13e0b7fd13e0b7", "7cc43b817cc43b81", "d2ada8d9d2ada8d9",
+        "165fa266165fa266", "8095770580957705", "93cc731493cc7314", "211a1477211a1477",
+        "e6ad2065e6ad2065", "77b5fa8677b5fa86", "c75442f5c75442f5", "fb9d35cffb9d35cf",
+        "ebcdaf0cebcdaf0c", "7b3e89a07b3e89a0", "d6411bd3d6411bd3", "ae1e7e49ae1e7e49",
+        "00250e2d00250e2d", "2071b35e2071b35e", "226800bb226800bb", "57b8e0af57b8e0af",
+        "2464369b2464369b", "f009b91ef009b91e", "5563911d5563911d", "59dfa6aa59dfa6aa",
+        "78c1438978c14389", "d95a537fd95a537f", "207d5ba2207d5ba2", "02e5b9c502e5b9c5",
+        "8326037683260376", "6295cfa96295cfa9", "11c8196811c81968", "4e734a414e734a41",
+        "b3472dcab3472dca", "7b14a94a7b14a94a", "1b5100521b510052", "9a5329159a532915",
+        "d60f573fd60f573f", "bc9bc6e4bc9bc6e4", "2b60a4762b60a476", "81e6740081e67400",
+        "08ba6fb508ba6fb5", "571be91f571be91f", "f296ec6bf296ec6b", "2a0dd9152a0dd915",
+        "b6636521b6636521", "e7b9f9b6e7b9f9b6", "ff34052eff34052e", "c5855664c5855664",
+        "53b02d5d53b02d5d", "a99f8fa1a99f8fa1", "08ba479908ba4799", "6e85076a6e85076a" },
+
+    { "d1310ba6d1310ba6", "98dfb5ac98dfb5ac", "2ffd72db2ffd72db", "d01adfb7d01adfb7",
+        "b8e1afedb8e1afed", "6a267e966a267e96", "ba7c9045ba7c9045", "f12c7f99f12c7f99",
+        "24a1994724a19947", "b3916cf7b3916cf7", "0801f2e20801f2e2", "858efc16858efc16",
+        "636920d8636920d8", "71574e6971574e69", "a458fea3a458fea3", "f4933d7ef4933d7e",
+        "0d95748f0d95748f", "728eb658728eb658", "718bcd58718bcd58", "82154aee82154aee",
+        "7b54a41d7b54a41d", "c25a59b5c25a59b5", "9c30d5399c30d539", "2af260132af26013",
+        "c5d1b023c5d1b023", "286085f0286085f0", "ca417918ca417918", "b8db38efb8db38ef",
+        "8e79dcb08e79dcb0", "603a180e603a180e", "6c9e0e8b6c9e0e8b", "b01e8a3eb01e8a3e",
+        "d71577c1d71577c1", "bd314b27bd314b27", "78af2fda78af2fda", "55605c6055605c60",
+        "e65525f3e65525f3", "aa55ab94aa55ab94", "5748986257489862", "63e8144063e81440",
+        "55ca396a55ca396a", "2aab10b62aab10b6", "b4cc5c34b4cc5c34", "1141e8ce1141e8ce",
+        "a15486afa15486af", "7c72e9937c72e993", "b3ee1411b3ee1411", "636fbc2a636fbc2a",
+        "2ba9c55d2ba9c55d", "741831f6741831f6", "ce5c3e16ce5c3e16", "9b87931e9b87931e",
+        "afd6ba33afd6ba33", "6c24cf5c6c24cf5c", "7a3253817a325381", "2895867728958677",
+        "3b8f48983b8f4898", "6b4bb9af6b4bb9af", "c4bfe81bc4bfe81b", "6628219366282193",
+        "61d809cc61d809cc", "fb21a991fb21a991", "487cac60487cac60", "5dec80325dec8032",
+        "ef845d5def845d5d", "e98575b1e98575b1", "dc262302dc262302", "eb651b88eb651b88",
+        "23893e8123893e81", "d396acc5d396acc5", "0f6d6ff30f6d6ff3", "83f4423983f44239",
+        "2e0b44822e0b4482", "a4842004a4842004", "69c8f04a69c8f04a", "9e1f9b5e9e1f9b5e",
+        "21c6684221c66842", "f6e96c9af6e96c9a", "670c9c61670c9c61", "abd388f0abd388f0",
+        "6a51a0d26a51a0d2", "d8542f68d8542f68", "960fa728960fa728", "ab5133a3ab5133a3",
+        "6eef0b6c6eef0b6c", "137a3be4137a3be4", "ba3bf050ba3bf050", "7efb2a987efb2a98",
+        "a1f1651da1f1651d", "39af017639af0176", "66ca593e66ca593e", "82430e8882430e88",
+        "8cee86198cee8619", "456f9fb4456f9fb4", "7d84a5c37d84a5c3", "3b8b5ebe3b8b5ebe",
+        "e06f75d8e06f75d8", "85c1207385c12073", "401a449f401a449f", "56c16aa656c16aa6",
+        "4ed3aa624ed3aa62", "363f7706363f7706", "1bfedf721bfedf72", "429b023d429b023d",
+        "37d0d72437d0d724", "d00a1248d00a1248", "db0fead3db0fead3", "49f1c09b49f1c09b",
+        "075372c9075372c9", "80991b7b80991b7b", "25d479d825d479d8", "f6e8def7f6e8def7",
+        "e3fe501ae3fe501a", "b6794c3bb6794c3b", "976ce0bd976ce0bd", "04c006ba04c006ba",
+        "c1a94fb6c1a94fb6", "409f60c4409f60c4", "5e5c9ec25e5c9ec2", "196a2463196a2463",
+        "68fb6faf68fb6faf", "3e6c53b53e6c53b5", "1339b2eb1339b2eb", "3b52ec6f3b52ec6f",
+        "6dfc511f6dfc511f", "9b30952c9b30952c", "cc814544cc814544", "af5ebd09af5ebd09",
+        "bee3d004bee3d004", "de334afdde334afd", "660f2807660f2807", "192e4bb3192e4bb3",
+        "c0cba857c0cba857", "45c8740f45c8740f", "d20b5f39d20b5f39", "b9d3fbdbb9d3fbdb",
+        "5579c0bd5579c0bd", "1a60320a1a60320a", "d6a100c6d6a100c6", "402c7279402c7279",
+        "679f25fe679f25fe", "fb1fa3ccfb1fa3cc", "8ea5e9f88ea5e9f8", "db3222f8db3222f8",
+        "3c7516df3c7516df", "fd616b15fd616b15", "2f501ec82f501ec8", "ad0552abad0552ab",
+        "323db5fa323db5fa", "fd238760fd238760", "53317b4853317b48", "3e00df823e00df82",
+        "9e5c57bb9e5c57bb", "ca6f8ca0ca6f8ca0", "1a87562e1a87562e", "df1769dbdf1769db",
+        "d542a8f6d542a8f6", "287effc3287effc3", "ac6732c6ac6732c6", "8c4f55738c4f5573",
+        "695b27b0695b27b0", "bbca58c8bbca58c8", "e1ffa35de1ffa35d", "b8f011a0b8f011a0",
+        "10fa3d9810fa3d98", "fd2183b8fd2183b8", "4afcb56c4afcb56c", "2dd1d35b2dd1d35b",
+        "9a53e4799a53e479", "b6f84565b6f84565", "d28e49bcd28e49bc", "4bfb97904bfb9790",
+        "e1ddf2dae1ddf2da", "a4cb7e33a4cb7e33", "62fb134162fb1341", "cee4c6e8cee4c6e8",
+        "ef20cadaef20cada", "36774c0136774c01", "d07e9efed07e9efe", "2bf11fb42bf11fb4",
+        "95dbda4d95dbda4d", "ae909198ae909198", "eaad8e71eaad8e71", "6b93d5a06b93d5a0",
+        "d08ed1d0d08ed1d0", "afc725e0afc725e0", "8e3c5b2f8e3c5b2f", "8e7594b78e7594b7",
+        "8ff6e2fb8ff6e2fb", "f2122b64f2122b64", "8888b8128888b812", "900df01c900df01c",
+        "4fad5ea04fad5ea0", "688fc31c688fc31c", "d1cff191d1cff191", "b3a8c1adb3a8c1ad",
+        "2f2f22182f2f2218", "be0e1777be0e1777", "ea752dfeea752dfe", "8b021fa18b021fa1",
+        "e5a0cc0fe5a0cc0f", "b56f74e8b56f74e8", "18acf3d618acf3d6", "ce89e299ce89e299",
+        "b4a84fe0b4a84fe0", "fd13e0b7fd13e0b7", "7cc43b817cc43b81", "d2ada8d9d2ada8d9",
+        "165fa266165fa266", "8095770580957705", "93cc731493cc7314", "211a1477211a1477",
+        "e6ad2065e6ad2065", "77b5fa8677b5fa86", "c75442f5c75442f5", "fb9d35cffb9d35cf",
+        "ebcdaf0cebcdaf0c", "7b3e89a07b3e89a0", "d6411bd3d6411bd3", "ae1e7e49ae1e7e49",
+        "00250e2d00250e2d", "2071b35e2071b35e", "226800bb226800bb", "57b8e0af57b8e0af",
+        "2464369b2464369b", "f009b91ef009b91e", "5563911d5563911d", "59dfa6aa59dfa6aa",
+        "78c1438978c14389", "d95a537fd95a537f", "207d5ba2207d5ba2", "02e5b9c502e5b9c5",
+        "8326037683260376", "6295cfa96295cfa9", "11c8196811c81968", "4e734a414e734a41",
+        "b3472dcab3472dca", "7b14a94a7b14a94a", "1b5100521b510052", "9a5329159a532915",
+        "d60f573fd60f573f", "bc9bc6e4bc9bc6e4", "2b60a4762b60a476", "81e6740081e67400",
+        "08ba6fb508ba6fb5", "571be91f571be91f", "f296ec6bf296ec6b", "2a0dd9152a0dd915",
+        "b6636521b6636521", "e7b9f9b6e7b9f9b6", "ff34052eff34052e", "c5855664c5855664",
+        "53b02d5d53b02d5d", "a99f8fa1a99f8fa1", "08ba479908ba4799", "6e85076a6e85076a" },
+};
+
+
+void userSeed(string&);
+void blowEncrypt(string, string&, string[]);
+void F(string&, string&, string&, string[][256]);    //F Function... not to be called in main(). just for the blowEncrypt(). 
+void swap(string&, string&);
+void s_Key_Gen(string&, string);
+
+static int keyVar1 = 0, keyVar2 = 1, keyVar3 = 2, keyVar4 = 3;
+static int countIteration = 0;
+static string subKeys[12];
+
+void main()
+{
+    string seed = "", recombine = "";
+    userSeed(seed);
+
+    /// ///Time start for Calculating CPU Excution Time
+    clock_t start_time = clock();
+
+    for (int i = 0; i < 3; i++)
+    {
+        ++countIteration;
+        blowEncrypt(seed, recombine, iniPArr);
+
+        //cout << "\n\n\n\tSeed: " << seed << "\trecombine: " << recombine;
+
+        s_Key_Gen(seed, recombine);
+    }
+
+    /// Time Taken to generate 18 Sub-Keys
+    clock_t end_time1 = clock();
+    clock_t result = end_time1 - start_time;
+
+    MEMORYSTATUSEX memInfo;
+    memInfo.dwLength = sizeof(MEMORYSTATUSEX);
+    GlobalMemoryStatusEx(&memInfo);
+    DWORDLONG totalVirtualMem = memInfo.ullTotalPageFile;
+    DWORDLONG virtualMemUsed = memInfo.ullTotalPageFile - memInfo.ullAvailPageFile;
+
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+    SIZE_T virtualMemUsedByMe = pmc.PrivateUsage;
+
+    DWORDLONG totalPhysMem = memInfo.ullTotalPhys;
+    DWORDLONG physMemUsed = memInfo.ullTotalPhys - memInfo.ullAvailPhys;
+    SIZE_T physMemUsedByMe = pmc.WorkingSetSize;
+
+    cout << "\n\n\tTotal Execution Time \t\t= \t" << result << "ms";
+    cout << "\n\tPhysical Memory Utilization \t= \t" << physMemUsedByMe / (1024*1024)<<" MB";
+    cout << "\n\tTotal Iterations to Generate all Required SubKeys: " << countIteration << endl << endl << endl;
+}
+
+void userSeed(string& mystr)
+{
+    int mystrLength = 0;
+    do
+    {
+        cout << "\n\tPlease Enter the 16 Character String:\t";
+        cin >> mystr;
+        mystrLength = mystr.length();
+        if (mystrLength > 16) { cout << "\n\t\t\t!!! --- Invalid String Length --- !!!"; }
+    } while (mystrLength > 16);
+}
+
+// text x is divided into two parts... xLeft and xRight. and then both parts are XOR with the part of pArray 
+void blowEncrypt(string  topReg, string& recom, string PArray[])
+{
+    string xLeft = "", xRight = "", F_xL = "";
+
+    xLeft = topReg.substr(0, 8);
+    xRight = topReg.substr(8, 8);
+
+    //cout << "\n\nxLeft: " << xLeft << "\txRight: " << xRight;
+
+    //xLeft and xRight are XOR with left and right part of pArray
+    for (int i = 0; i < 12; i++)
+    {
+        ++countIteration;
+
+        string tmpPVal = PArray[i];
+
+        for (int j = 0; j < xLeft.length(); j++)
+        {   xLeft[j] = xLeft[j] ^ tmpPVal[j];   ++countIteration;   }
+
+        for (int k = 0; k < xRight.length(); k++)
+        {   ++countIteration;   xRight[k] = xRight[k] ^ tmpPVal[k]; }
+
+        F(F_xL, xLeft, xRight, S);
+        for (int l = 0; l < xRight.length(); l++)           /// XORing right 32-bits with result of F(XL)
+        {   xRight[l] = xRight[l] ^ F_xL[l];    ++countIteration;   }
+
+        swap(xLeft, xRight);
+    }
+
+    recom = xLeft + xRight;      //cout << "\n\n\tRecombine: "<< recombine;
+}
+
+void F(string& F_Str, string& lStr, string& rStr, string sStr[][256])
+{
+    //xLeft to be divided in 08 bits x 04 chunks...
+    //or simply 1 char x 04 chunks.
+    //And then converted into integer alternative of ASCII
+    int xL1 = (int)lStr[0]; int xL2 = (int)lStr[1]; int xL3 = (int)lStr[2]; int xL4 = (int)lStr[3];
+
+    string s1 = S[0][xL1]; string s2 = S[1][xL2]; string s3 = S[2][xL3]; string s4 = S[3][xL4];
+
+    /// f(x) = ( (s1+s2) ^ s3) + S4 ///
+    char tmp[4];
+    string s1s2 = s1 + s2;
+
+    string tmpStr;
+    for (int i = 0; i < 4; i++)
+    {   tmp[i] = s1s2[i] ^ s3[i];   tmpStr += tmp[i];   }
+
+    F_Str = tmpStr + s4;
+}
+
+void swap(string& XL, string& XR)
+{
+    string tmp = XR;
+    XR = XL;
+    XL = tmp;
+}
+
+void s_Key_Gen(string& seedStr, string recombineStr)
+{
+    seedStr = recombineStr;
+    
+    subKeys[keyVar1] = recombineStr.substr(0, 4);
+    subKeys[keyVar2] = recombineStr.substr(4, 4);
+    subKeys[keyVar3] = recombineStr.substr(8, 4);
+    subKeys[keyVar4] = recombineStr.substr(12, 4);
+
+    cout << "\n\n\tSubKey " << keyVar1 + 1 << ": " << subKeys[keyVar1];
+    cout << "\n\tSubKey " << keyVar2 + 1 << ": " << subKeys[keyVar2];
+    cout << "\n\tSubKey " << keyVar3 + 1 << ": " << subKeys[keyVar3];
+    cout << "\n\tSubKey " << keyVar4 + 1 << ": " << subKeys[keyVar4];
+
+    keyVar1 += 4;   keyVar2 += 4;   keyVar3 += 4;   keyVar4 += 4;
+}
